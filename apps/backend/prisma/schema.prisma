@@ -8,10 +8,60 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  UserID        Int    @id
-  Email         String @unique(map: "Email") @db.VarChar(255)
-  Password_Hash String @db.VarChar(255)
-  Role          String @db.VarChar(255)
-  Name          String @db.VarChar(255)
+model Tenant {
+  id          Int       @id @default(autoincrement())
+  users       User[]
+  products    Product[] 
+  name        String    @db.VarChar(255)
+  plan        Plan      @default(FREE)
+  created_at  DateTime  @db.Timestamp() @default(now())
+}
+
+model User {
+  id              Int       @id @default(autoincrement())
+  tenant          Tenant    @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  tenant_id       Int
+  issued_roducts  Product[] @relation(name: "Issuer")
+  owned_products  Product[] @relation(name: "Current Owner")
+  email           String    @unique @db.VarChar(255)
+  role            Role 
+  public_key      String?   @db.Text
+  created_at      DateTime  @db.Timestamp() @default(now())
+}
+
+model Product {
+  id                          Int       @id @default(autoincrement())
+  tenant                      Tenant    @relation(fields: [tenant_id], references: [id])
+  tenant_id                   Int
+  issuer                      User      @relation(name: "Issuer", fields: [issuer_id], references: [id], onDelete: Restrict)
+  issuer_id                   Int 
+  current_owner               User?     @relation(name: "Current Owner", fields: [current_owner_id], references: [id], onDelete: SetNull)
+  current_owner_id            Int?
+  serial_encrypted            Bytes     @db.VarBinary(1024)
+  aes_key_wrapped             Bytes     @db.VarBinary(2048)
+  serial_hash                 String    @db.Char(66)
+  product_metadata_encrypted  Bytes     @db.MediumBlob
+  blockchain_tx_hash          String?   @db.VarChar(128)
+  blockchain_token_id         String?   @db.VarChar(128)
+  status                      Status    @default(REGISTERED)
+  created_at                  DateTime  @db.Timestamp() @default(now())
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum Role {
+  ISSUER
+  OWNER
+  ADMIN
+  VERIFIER
+}
+
+enum Status {
+  REGISTERED
+  TRANSFERRED
+  REVOKED
 }

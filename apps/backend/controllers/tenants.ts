@@ -1,21 +1,21 @@
 import { Request, Response } from "express";
-import { dbAddUser, dbDeleteUser, dbFindManyUsers, dbFindOneUser, dbUpdateUser } from "../queries/users.js";
-import { User } from "../generated/prisma/index.js";
+import { Tenant } from "../generated/prisma/index.js";
+import { dbAddTenant, dbDeleteTenant, dbFindManyTenants, dbFindOneTenant, dbUpdateTenant } from "../queries/tenants.js";
 
 /**
  * @openapi
- * /api/users:
+ * /api/tenants:
  *   post:
  *     tags:
- *       - user
- *     summary: Add a new user.
- *     description: Add a new user.
+ *       - tenant
+ *     summary: Add a new tenant.
+ *     description: Add a new tenant.
  *     requestBody:
- *       description: Create a new user
+ *       description: Create a new tenant
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/Tenant'
  *       required: true
  *     responses:
  *       200:
@@ -25,54 +25,54 @@ import { User } from "../generated/prisma/index.js";
  *       default:
  *         description: Unexpected error
  */
-export async function createUser(request: Request<{}, {}, User>, response: Response) {
-    const [newUser, errorCode, errorMessage] = await dbAddUser(request.body);
+export async function createTenant(request: Request<{}, {}, Tenant>, response: Response) {
+    const [newTenant, errorCode, errorMessage] = await dbAddTenant(request.body);
     
     if (errorCode === 'P2002') {
         response.status(400).send(errorMessage);
     } else if (errorCode !== 'P2002' && errorMessage !== null) {
         response.status(500).send(errorMessage);
     } else {
-        response.status(200).send(newUser);
+        response.status(200).send(newTenant);
     }
 }
 
 /**
  * @openapi
- * /api/users:
+ * /api/tenants:
  *   get:
  *     tags:
- *       - user
- *     summary: Finds all users.
- *     description: Returns all users.
+ *       - tenant
+ *     summary: Finds all tenants.
+ *     description: Returns all tenants.
  *     responses:
  *       200:
  *         description: Successful operation
  *       default:
  *         description: Unexpected error
  */
-export async function getUsers(request: Request, response: Response) {
-    const [users, errorCode, errorMessage] = await dbFindManyUsers();
+export async function getTenants(request: Request, response: Response) {
+    const [tenants, errorCode, errorMessage] = await dbFindManyTenants();
 
     if (errorCode !== null || errorMessage !== null) {
         response.status(500).send(errorMessage);
     } else {
-        response.status(200).send(users);
+        response.status(200).send(tenants);
     }
 }
 
 /**
  * @openapi
- * /api/users/{userId}:
+ * /api/tenants/{tenantId}:
  *   get:
  *     tags:
- *       - user
- *     summary: Finds user by ID.
- *     description: Returns a single user.
+ *       - tenant
+ *     summary: Finds tenant by ID.
+ *     description: Returns a single tenant.
  *     parameters:
- *       - name: userId
+ *       - name: tenantId
  *         in: path
- *         description: ID of user to return
+ *         description: ID of tenant to return
  *         required: true
  *         schema:
  *           type: integer
@@ -81,55 +81,55 @@ export async function getUsers(request: Request, response: Response) {
  *       200:
  *         description: Successful operation
  *       404:
- *         description: User not found
+ *         description: Tenant not found
  *       default:
  *         description: Unexpected error
  */
-export async function getUserById(request: Request<{id: number}>, response: Response) {
-    const [user, errorCode, errorMessage] = await dbFindOneUser(Number(request.params.id));
+export async function getTenantById(request: Request<{id: number}>, response: Response) {
+    const [tenant, errorCode, errorMessage] = await dbFindOneTenant(Number(request.params.id));
 
     if (errorCode !== null || errorMessage !== null) {
         response.status(500).send(errorMessage);
-    } else if (user === null) {
-        response.status(404).send('User not found');
+    } else if (tenant === null) {
+        response.status(404).send('Tenant not found');
     } else {
-        response.status(200).send(user);
+        response.status(200).send(tenant);
     }
 }
 
 /**
  * @openapi
- * /api/users/{userId}:
+ * /api/tenants/{tenantId}:
  *   put:
  *     tags:
- *       - user
- *     summary: Update an existing user.
- *     description: Update an existing user by ID.
+ *       - tenant
+ *     summary: Update an existing tenant.
+ *     description: Update an existing tenant by ID.
  *     parameters:
- *       - name: userId
+ *       - name: tenantId
  *         in: path
- *         description: ID of user to update
+ *         description: ID of tenant to update
  *         required: true
  *         schema:
  *           type: integer
  *           format: int64
  *     requestBody:
- *       description: Update an existent user
+ *       description: Update an existent tenant
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             $ref: '#/components/schemas/Tenant'
  *       required: true
  *     responses:
  *       200:
  *         description: Successful operation
  *       404:
- *         description: User not found
+ *         description: Tenant not found
  *       default:
  *         description: Unexpected error
  */
-export async function updateUser(request: Request<{id: number}, {}, User>, response: Response) {
-    const [updatedUser, errorCode, errorMessage] = await dbUpdateUser(request.params.id, request.body);
+export async function updateTenant(request: Request<{id: number}, {}, Tenant>, response: Response) {
+    const [updateTenant, errorCode, errorMessage] = await dbUpdateTenant(request.params.id, request.body);
 
     if (errorCode === 'P2025') {
         response.status(404).send(errorMessage);
@@ -138,42 +138,42 @@ export async function updateUser(request: Request<{id: number}, {}, User>, respo
     } else if (errorCode !== 'P2025' && errorCode !== 'P2002' && errorMessage !== null) {
         response.status(500).send(errorMessage);
     } else {
-        response.status(200).send(updatedUser);
-    }
+        response.status(200).send(updateTenant);
+    }    
 }
 
 /**
  * @openapi
- * /api/users/{userId}:
+ * /api/tenants/{tenantId}:
  *   delete:
  *     tags:
- *       - user
- *     summary: Deletes a user.
- *     description: Delete a user.
+ *       - tenant
+ *     summary: Deletes a tenant.
+ *     description: Delete a tenant.
  *     parameters:
- *       - name: userId
+ *       - name: tenantId
  *         in: path
- *         description: User ID to delete
+ *         description: Tenant ID to delete
  *         required: true
  *         schema:
  *           type: integer
  *           format: int64
  *     responses:
  *       200:
- *         description: User deleted
+ *         description: Tenant deleted
  *       400:
- *         description: Invalid user ID
+ *         description: Invalid tenant ID
  *       default:
  *         description: Unexpected error
  */
-export async function deleteUser(request: Request<{id: number}>, response: Response) {
-    const [_, errorCode, errorMessage] = await dbDeleteUser(Number(request.params.id));
+export async function deleteTenant(request: Request<{id: number}>, response: Response) {
+    const [_, errorCode, errorMessage] = await dbDeleteTenant(Number(request.params.id));
 
     if (errorCode === 'P2025') {
         response.status(400).send(errorMessage);
     } else if (errorCode !== 'P2025' && errorMessage !== null) {
         response.status(500).send(errorMessage);
     } else {
-        response.status(200).send('User deleted');
+        response.status(200).send('Tenant deleted');
     }
 }

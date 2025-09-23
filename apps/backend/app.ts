@@ -1,5 +1,6 @@
 import express from "express";
 import userRouter from "./routes/users.js";
+import tenantRouter from "./routes/tenants.js"
 import { serve, setup } from "swagger-ui-express";
 import swaggerJSDoc from "swagger-jsdoc";
 import bodyParser from "body-parser";
@@ -15,8 +16,9 @@ app.get('/', (req, res) => {
 
 app.use(bodyParser.json());
 
-app.use('/api-docs', serve, setup(swaggerSpec))
+app.use('/api-docs', serve, setup(swaggerSpec));
 app.use('/api/users', userRouter);
+app.use('/api/tenants', tenantRouter);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

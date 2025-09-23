@@ -10,7 +10,7 @@ export const options = {
         'User': {
           type: 'object',
           properties: {
-            userId: {
+            tenant_id: {
               type: 'integer',
               format: 'int64',
               example: 1,
@@ -19,17 +19,36 @@ export const options = {
               type: 'string',
               example: 'johndoe@example.com',
             },
-            passwordHash: {
-              type: 'string',
-              example: '12345',
-            },
             role: {
               type: 'string',
-              example: 'Admin',
+              example: 'OWNER',
             },
+            public_key: {
+              type: 'string',
+              example: '',
+            },
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-01-13T00:00:00Z',
+            },
+          },
+        },
+        'Tenant': {
+          type: 'object',
+          properties: {
             name: {
               type: 'string',
-              example: 'John Doe',
+              example: 'Company XYZ',
+            },
+            plan: {
+              type: 'string',
+              example: 'FREE',
+            },
+            created_at: {
+              type: 'string',
+              format: 'date-time',
+              example: '2025-01-13T00:00:00Z',
             },
           },
         },
@@ -45,8 +64,18 @@ export const options = {
             },
           },
         },
+        'Tenant': {
+          description: 'Tenant object that needs to be added',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Tenant',
+              },
+            },
+          },
+        },
       },
     },
   },
   apis: ['./controllers/*.ts'], // files containing annotations as above
-};
+}
